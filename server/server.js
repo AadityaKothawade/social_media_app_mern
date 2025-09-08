@@ -17,11 +17,15 @@ await connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-  origin: "http://localhost:5173",   // frontend URL
+  origin: [
+    "http://localhost:5173",               // local dev
+    "https://connect-app-media.vercel.app" // deployed frontend
+  ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
 app.use(clerkMiddleware())
 
 app.get('/',(req,res)=>{
