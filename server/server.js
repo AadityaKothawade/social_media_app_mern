@@ -16,7 +16,12 @@ await connectDB();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173",   // frontend URL
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 app.use(clerkMiddleware())
 
 app.get('/',(req,res)=>{

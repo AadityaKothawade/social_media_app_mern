@@ -177,7 +177,7 @@ export const unfollowUser = async (req,res) => {
 export const sendConnectionRequest = async (req,res) => {
     try {
         const {userId} = req.auth();
-        const id = req.body;
+        const {id} = req.body;
         
         // check the server attack => 20 req per last 24 hour time from one account 
         const last24Hours = new Date(Date.now() - 24*60*60*1000)
@@ -223,7 +223,7 @@ export const sendConnectionRequest = async (req,res) => {
 export const getUserConnections = async (req,res) => {
     try {
         const {userId} = req.auth();
-        const user = await User.findById(userId).populate('connection followers following ')
+        const user = await User.findById(userId).populate('connections followers following')
 
         const connections = user.connections
         const followers = user.followers

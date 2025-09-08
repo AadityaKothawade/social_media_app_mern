@@ -3,6 +3,11 @@ import moment from 'moment'
 import React,{useState} from 'react'
 import { dummyUserData } from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import api from '../api/axios'
+import toast from 'react-hot-toast'
+import { useAuth } from '@clerk/clerk-react'
+
 
 function PostCard({post}) {
 
@@ -11,17 +16,31 @@ function PostCard({post}) {
     const postWithHashtags = post.content.replace(/(#\w+)/g,'<span class="text-blue-500 cursor-pointer">$1</span>')
 
     const [likes,setLikes] = useState(post.likes_count || 0)
-    const currentUser = dummyUserData
+    const currentUser = useSelector((state)=> state.user.value)
+
+    const {getToken} = useAuth();
 
     const handleLike = async () =>{
-        let updatedLikes;
-        if(likes.includes(currentUser._id)){
-            updatedLikes = likes.filter(id => id !== currentUser._id)
-        }else{
-            updatedLikes = [...likes,currentUser._id]
-        }
-        setLikes(updatedLikes)
+       try {
+        const {data} = await api.post('/api/post/like',{postId:post._id},
+            {headers : {Authorization : `Bearer ${await getToken()}`}}
+        )
 
+        if(data.success){
+            toast.success(data.message)
+            setLikes(prev=>{
+                if(prev.includes(currentUser._id)){
+                    return prev.filter(id=>id !== currentUser._id)
+                }else{
+                    return [...prev,currentUser._id]
+                }
+            })
+        }else{
+            toast(data.message)
+        }
+       } catch (error) {
+          toast.error(error.message)
+       }
     }
 
     const navigate = useNavigate();

@@ -13,15 +13,19 @@ export const sseController = (req,res) => {
     res.setHeader('Content-type','text/event-stream');
     res.setHeader('Cache-Control','no-cache');
     res.setHeader('Connection','keep-alive');
-    res.setHeader('Access-Control-Allow-Origin','keep-alive','*');
+    // res.setHeader('Access-Control-Allow-Origin','keep-alive','*');
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    
 
     // Add the clients's response object to the connection
     connections[userId] = res
+    // if (!connections[userId]) connections[userId] = [];
+    // connections[userId].push(res);
 
     res.write('log:Connected to SSE stream\n\n');
 
     // Client disconnected
-    res.on('Close',()=>{
+    res.on('close',()=>{
         delete connections[userId];
         console.log('client disconnected ')
     })
@@ -72,6 +76,10 @@ export const sendMessage = async (req,res) => {
             connections[to_user_id].write(`data: ${JSON.stringify(messageWithUserData)}\n\n`)
         }
 
+        if (connections[userId]) {
+             connections[userId].write(`data: ${JSON.stringify(messageWithUserData)}\n\n`);
+        }
+
     } catch (error) {
         console.log(error);
         res.json({success:false, message:error.message});
@@ -104,7 +112,9 @@ export const getChatMessages = async (req,res) => {
 export const getUserRecentMessages = async (req,res) => {
     try {
         const {userId} = req.auth();
-        const messages = await Message.find({to_user_id:userId}.populate('from_user_id to_user_id')).sort({createdAt:-1});
+       const messages = await Message.find({ to_user_id: userId })
+        .populate("from_user_id to_user_id")
+        .sort({ createdAt: -1 });
 
         res.json({success:true,messages});
 
